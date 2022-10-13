@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:go_router_practice/pages/list_page.dart';
 import 'package:go_router_practice/pages/post_page.dart';
 import 'package:go_router_practice/pages/settings_page.dart';
 
-class BottomNavigator extends StatefulWidget {
-  const BottomNavigator({Key? key}) : super(key: key);
+class BottomNavigator extends StatelessWidget {
+  const BottomNavigator({
+    super.key,
+    required this.selectedPage,
+  });
 
-  @override
-  State<BottomNavigator> createState() => _BottomNavigatorState();
-}
-
-class _BottomNavigatorState extends State<BottomNavigator> {
-  int _page = 0;
+  final int selectedPage;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +21,7 @@ class _BottomNavigatorState extends State<BottomNavigator> {
             ListPage(),
             PostPage(),
             SettingsPage(),
-          ][_page],
+          ][selectedPage],
         ),
         BottomNavigationBar(
           items: const [
@@ -39,9 +38,9 @@ class _BottomNavigatorState extends State<BottomNavigator> {
               label: 'SETTINGS',
             ),
           ],
-          currentIndex: _page,
+          currentIndex: selectedPage,
           onTap: (index) {
-            setState(() => _page = index);
+            context.go('/top/$index');
           },
         ),
       ],

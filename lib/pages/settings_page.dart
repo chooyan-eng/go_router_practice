@@ -12,6 +12,15 @@ class SettingsPage extends StatelessWidget {
           Card(
             child: Padding(
               padding: EdgeInsets.all(16),
+              child: Text(
+                'ログアウト',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+          Card(
+            child: Padding(
+              padding: EdgeInsets.all(16),
               child: Text('アカウント'),
             ),
           ),
