@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:go_router_practice/pages/post_confirm_page.dart';
 
-class PostPage extends StatelessWidget {
+class PostPage extends StatefulWidget {
   const PostPage({Key? key}) : super(key: key);
+
+  @override
+  State<PostPage> createState() => _PostPageState();
+}
+
+class _PostPageState extends State<PostPage> {
+  var _inputText = '';
 
   @override
   Widget build(BuildContext context) {
@@ -11,11 +19,19 @@ class PostPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            const TextField(),
+            TextField(
+              onChanged: (value) => _inputText = value,
+            ),
             const SizedBox(height: 32),
             ElevatedButton(
-              onPressed: () {},
-              child: const Text('投稿する'),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => PostConfirmPage(_inputText),
+                  ),
+                );
+              },
+              child: const Text('投稿確認'),
             ),
           ],
         ),

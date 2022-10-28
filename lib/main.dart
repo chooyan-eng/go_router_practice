@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:go_router_practice/pages/bottom_navigator.dart';
 import 'package:go_router_practice/pages/login_page.dart';
+import 'package:go_router_practice/pages/splash_page.dart';
 import 'package:go_router_practice/pages/tutorial_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(
@@ -13,16 +15,38 @@ void main() {
   );
 }
 
-enum TopPageType { top, tutorial, login }
+enum TopPageType { none, top, tutorial, login }
 
 class TopPageState extends ValueNotifier<TopPageType> {
   TopPageState(TopPageType initialPage) : super(initialPage);
+
+  Future<void> init() async {
+    final pref = await SharedPreferences.getInstance();
+    // チュートリアルが完了しているかどうか
+    final doneTutorial = pref.getBool(TopPageType.tutorial.name) ?? false;
+
+    // ログイン済みで UID が保存されているかどうか。
+    final uid = pref.getString(TopPageType.login.name);
+
+    if (doneTutorial) {
+      if (uid != null) {
+        // チュートリアルもログインも済んでいる場合はトップページ
+        value = TopPageType.top;
+      } else {
+        // チュートリアルは見たがログインしていない場合はトップページ
+        value = TopPageType.login;
+      }
+    } else {
+      // チュートリアルもまだな場合はチュートリアル画面から
+      value = TopPageType.tutorial;
+    }
+    notifyListeners();
+  }
 }
 
 final pageStateProvider = Provider<TopPageState>((ref) {
   // ここで初回表示すべきページを制御する
-  const initialPage = TopPageType.login;
-  return TopPageState(initialPage);
+  return TopPageState(TopPageType.none)..init();
 });
 
 class MyApp extends ConsumerWidget {
@@ -39,15 +63,27 @@ class MyApp extends ConsumerWidget {
       // routeInformationParser: ,
       // routeInformationProvider: ,
       routerConfig: GoRouter(
+        // ここに登録したオブジェクトが notifyListeners() するたびに redirect が評価される
         refreshListenable: ref.read(pageStateProvider),
         redirect: (context, state) {
+          // ここで null を返却した場合は routes に指定の通りの遷移になる
+          // path 文字列を返却した場合は該当する route に遷移する（戻れない）
+
           switch (ref.read(pageStateProvider).value) {
+            case TopPageType.none:
+              return null;
             case TopPageType.tutorial:
+              // 遷移先がチュートリアルの場合はそのまま、それ以外は強制でチュートリアル
               return state.location == '/tutorial' ? null : '/tutorial';
             case TopPageType.login:
+              // 遷移先がログインの場合はそのまま、それ以外は強制でログイン画面
               return state.location == '/login' ? null : '/login';
             case TopPageType.top:
-              return state.path;
+              // 指定通りの画面へ
+              if (!state.location.startsWith('/top')) {
+                return '/top/0';
+              }
+              return null;
           }
         },
         initialLocation: '/',
@@ -57,7 +93,7 @@ class MyApp extends ConsumerWidget {
         routes: <GoRoute>[
           GoRoute(
             path: '/',
-            builder: (context, state) => Container(),
+            builder: (context, state) => const SplashPage(),
           ),
           GoRoute(
             name: 'tutorial',
